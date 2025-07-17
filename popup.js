@@ -1,39 +1,74 @@
-let utterance = null; // Store the speech instance
+let utterance = null;
+let isPlaying = false;
+let currentRate = 1.0;
 
-// PLAY button
-document.getElementById('play').addEventListener('click', async () => {
-  // Get selected text from the current tab
+// Play/Pause toggle button
+document.getElementById('playPause').addEventListener('click', async () => {
+  if (isPlaying) {
+    speechSynthesis.pause();
+    document.getElementById('playPause').textContent = "Play";
+    isPlaying = false;
+    return;
+  }
+
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    func: () => window.getSelection().toString() // grab selected text
+    func: () => window.getSelection().toString()
   }, (results) => {
-    const selectedText = results[0].result;
+    if (chrome.runtime.lastError) {
+      alert("Error getting selected text.");
+      return;
+    }
+
+    const selectedText = results?.[0]?.result?.trim();
     if (selectedText) {
-      utterance = new SpeechSynthesisUtterance(selectedText); // create speech
-      speechSynthesis.speak(utterance); // start reading
+      speechSynthesis.cancel();
+      utterance = new SpeechSynthesisUtterance(selectedText);
+      utterance.rate = currentRate;
+      speechSynthesis.speak(utterance);
+      document.getElementById('playPause').textContent = "Pause";
+      isPlaying = true;
+
+      utterance.onend = () => {
+        document.getElementById('playPause').textContent = "Play";
+        isPlaying = false;
+      };
     } else {
-      alert("Please select some text on the page first.");
+      alert("Please select some text first.");
     }
   });
 });
 
-// PAUSE button
-document.getElementById('pause').addEventListener('click', () => {
-  if (speechSynthesis.speaking && !speechSynthesis.paused) {
-    speechSynthesis.pause(); // pause if speaking
-  } else if (speechSynthesis.paused) {
-    speechSynthesis.resume(); // resume if already paused
-  }
+// Resume if paused
+speechSynthesis.onpause = () => {
+  isPlaying = false;
+};
+
+speechSynthesis.onresume = () => {
+  isPlaying = true;
+  document.getElementById('playPause').textContent = "Pause";
+};
+
+// Speed button toggle
+document.getElementById('speed').addEventListener('click', () => {
+  const speedControls = document.getElementById('speedControls');
+  speedControls.classList.toggle('hidden');
 });
 
-// STOP button
-document.getElementById('stop').addEventListener('click', () => {
-  speechSynthesis.cancel(); // stop everything
+// Handle speed slider
+document.getElementById('rateSlider').addEventListener('input', (e) => {
+  const level = parseInt(e.target.value);
+  currentRate = 0.5 + (level - 1) * 0.375; // Level 1: 0.5x ... Level 5: 2.0x
+  document.getElementById('rateLabel').textContent = `Speed: ${currentRate.toFixed(1)}x`;
 });
 
-// AI (dummy button)
+// AI button
 document.getElementById('ai').addEventListener('click', () => {
   alert("AI Summary Coming Soon!");
+});
+
+// Close button
+document.getElementById('close').addEventListener('click', () => {
+  window.close();
 });
