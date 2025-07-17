@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Readify - Text to Speech",
+  "version": "1.0",
+  "description": "Reads selected text aloud with TTS.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "permissions": ["scripting", "activeTab"],
+  "icons": {
+    "48": "icon.png"
+  }
+}
