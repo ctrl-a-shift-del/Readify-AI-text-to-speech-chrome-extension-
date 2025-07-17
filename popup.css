@@ -1,34 +1,31 @@
 body {
   font-family: Arial, sans-serif;
-  width: 220px;
+  padding: 15px;
+  width: 250px;
   text-align: center;
-  padding: 10px;
+}
+
+h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+select, button, label, input[type="range"] {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 button {
-  margin: 5px;
-  padding: 8px 12px;
-  width: 90%;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
   background-color: #4CAF50;
   color: white;
+  border: none;
   border-radius: 5px;
+  cursor: pointer;
 }
 
 button:hover {
   background-color: #45a049;
-}
-
-#speedControls {
-  margin: 10px 0;
-}
-
-.hidden {
-  display: none;
-}
-
-input[type="range"] {
-  width: 100%;
 }

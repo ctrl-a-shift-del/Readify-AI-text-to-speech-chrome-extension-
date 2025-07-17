@@ -1,21 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Readify</title>
+  <meta charset="UTF-8" />
+  <title>Readify - Text to Speech</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h1>Readify</h1>
+  <h2>Readify</h2>
 
-  <button id="playPause">Play</button>
-  <button id="speed">Speed</button>
-  <div id="speedControls" class="hidden">
-    <input type="range" id="rateSlider" min="1" max="5" value="3">
-    <label id="rateLabel">Speed: 1.0x</label>
-  </div>
+  <label for="genderSelect">Gender:</label>
+  <select id="genderSelect">
+    <option value="all">All</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
 
-  <button id="ai">AI</button>
-  <button id="close">Close</button>
+  <label for="voiceSelect">Select Voice:</label>
+  <select id="voiceSelect">
+    <option>Loading voices...</option>
+  </select>
+
+  <label for="rateSlider">Speed:</label>
+  <input type="range" id="rateSlider" min="1" max="5" value="3">
+  <label id="rateLabel">Speed: 1.0x</label>
+
+  <button id="speak">Speak Selected Text</button>
 
   <script src="popup.js"></script>
 </body>
