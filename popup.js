@@ -1,225 +1,127 @@
-const synth = window.speechSynthesis;
-let voices = [];
-let state = "idle"; // idle, speaking, paused
-let currentUtterance = null;
-let currentRate = 1.0;
-let lastSelectedText = "";
+document.addEventListener("DOMContentLoaded", () => {
+  const startButton = document.getElementById("start-reading");
+  const statusDiv = document.getElementById("status");
+  const voiceSelect = document.getElementById("voice");
+  const audio = document.getElementById("tts-audio");
+  const summaryContainer = document.getElementById("summary-container");
+  const summaryText = document.getElementById("summary-text");
 
-// UI Elements
-const playPauseBtn = document.getElementById("playPauseBtn");
-const reloadBtn = document.getElementById("reloadBtn");
-const exitBtn = document.getElementById("exitBtn");
-const accentBtn = document.getElementById("accentBtn");
-const speedBtn = document.getElementById("speedBtn");
-const aiBtn = document.getElementById("aiBtn");
-const logoBtn = document.getElementById("logoBtn");
+  const GOOGLE_TTS_API_KEY = "AIzaSyDfkYbvnCDIobGnzFngGqnHCfhwxlvbfTM"; // Replace this!
 
-// Content area elements
-const defaultMessage = document.getElementById("defaultMessage");
-const voiceControls = document.getElementById("voiceControls");
-const speedControls = document.getElementById("speedControls");
-const aiMessage = document.getElementById("aiMessage");
-
-// Voice selection elements
-const voiceSelect = document.getElementById("voiceSelect");
-const rateSlider = document.getElementById("rateSlider");
-const rateLabel = document.getElementById("rateLabel");
-
-// ========== LOAD FROM LOCAL STORAGE ==========
-function loadSettings() {
-  const savedVoice = localStorage.getItem("voice");
-  const savedRate = localStorage.getItem("rate") || "3";
-
-  rateSlider.value = savedRate;
-  const level = parseInt(savedRate);
-  currentRate = 0.5 + (level - 1) * 0.375;
-  rateLabel.textContent = `Speed: ${currentRate.toFixed(1)}x`;
-
-  loadVoices(savedVoice);
-}
-
-// ========== SAVE TO LOCAL STORAGE ==========
-function saveSettings() {
-  localStorage.setItem("voice", voiceSelect.value);
-  localStorage.setItem("rate", rateSlider.value);
-}
-
-// ========== LOAD VOICES ==========
-function loadVoices(preselectedVoice = null) {
-  voices = synth.getVoices();
-  if (!voices.length) return;
-
-  voiceSelect.innerHTML = "";
-
-  voices.forEach((voice) => {
-    const option = document.createElement("option");
-    option.value = voice.name;
-    option.textContent = `${voice.name} (${voice.lang})${voice.default ? " — Default" : ""}`;
-    voiceSelect.appendChild(option);
-  });
-
-  if (preselectedVoice && [...voiceSelect.options].some(opt => opt.value === preselectedVoice)) {
-    voiceSelect.value = preselectedVoice;
-  }
-}
-
-// ========== APPLY SETTINGS TO NEW UTTERANCE ==========
-function createUtterance(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = currentRate;
-
-  const matchedVoice = voices.find(v => v.name === voiceSelect.value);
-  if (matchedVoice) utterance.voice = matchedVoice;
-
-  utterance.onend = () => {
-    state = "idle";
-    playPauseBtn.querySelector("img").src = "icons/play.png";
-    currentUtterance = null;
-  };
-
-  return utterance;
-}
-
-// ========== SPEAK TEXT ==========
-function speakText(text) {
-  if (!text) {
-    alert("Please select some text on the page.");
-    return;
+  function updateStatus(message, type = "info") {
+    statusDiv.textContent = message;
+    statusDiv.className = `status-${type}`;
   }
 
-  lastSelectedText = text;
-  synth.cancel();
-  currentUtterance = createUtterance(text);
-  synth.speak(currentUtterance);
-  state = "speaking";
-  playPauseBtn.querySelector("img").src = "icons/pause.png";
-}
-
-// ========== SHOW/HIDE CONTENT AREAS ==========
-function showDefaultMessage() {
-  defaultMessage.style.display = "flex";
-  voiceControls.style.display = "none";
-  speedControls.style.display = "none";
-  aiMessage.style.display = "none";
-}
-
-function showVoiceControls() {
-  defaultMessage.style.display = "none";
-  voiceControls.style.display = "block";
-  speedControls.style.display = "none";
-  aiMessage.style.display = "none";
-}
-
-function showSpeedControls() {
-  defaultMessage.style.display = "none";
-  voiceControls.style.display = "none";
-  speedControls.style.display = "block";
-  aiMessage.style.display = "none";
-}
-
-function showAIMessage() {
-  defaultMessage.style.display = "none";
-  voiceControls.style.display = "none";
-  speedControls.style.display = "none";
-  aiMessage.style.display = "flex";
-}
-
-// ========== EVENT LISTENERS ==========
-
-// Voice loading
-speechSynthesis.onvoiceschanged = () => loadVoices(localStorage.getItem("voice"));
-
-// Voice selection
-voiceSelect.addEventListener("change", () => {
-  synth.pause(); // Pause when changing voice
-  state = "paused";
-  saveSettings();
-  if (lastSelectedText) {
-    speakText(lastSelectedText);
-    synth.pause(); // Keep it paused after applying new voice
-    playPauseBtn.querySelector("img").src = "icons/play.png";
+  function showSummary(summary) {
+    summaryText.textContent = summary;
+    summaryContainer.classList.remove("hidden");
   }
-});
 
-// Speed control
-rateSlider.addEventListener("input", (e) => {
-  const level = parseInt(e.target.value);
-  currentRate = 0.5 + (level - 1) * 0.375;
-  rateLabel.textContent = `Speed: ${currentRate.toFixed(1)}x`;
-  saveSettings();
-  
-  // Pause and update if currently speaking
-  if (state === "speaking" || state === "paused") {
-    synth.pause();
-    state = "paused";
-    if (lastSelectedText) {
-      speakText(lastSelectedText);
-      synth.pause(); // Keep it paused after applying new speed
-      playPauseBtn.querySelector("img").src = "icons/play.png";
+  function hideSummary() {
+    summaryContainer.classList.add("hidden");
+    summaryText.textContent = "";
+  }
+
+  async function fetchTTSAudio(text, voice) {
+    const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_TTS_API_KEY}`;
+    const requestBody = {
+      input: { text },
+      voice: {
+        languageCode: voice.split("-").slice(0, 2).join("-"),
+        name: voice
+      },
+      audioConfig: {
+        audioEncoding: "MP3",
+        speakingRate: 1.0 // Fixed speed
+      }
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    });
+
+    const data = await res.json();
+
+    if (data.audioContent) {
+      return `data:audio/mp3;base64,${data.audioContent}`;
+    } else {
+      throw new Error("Failed to get audio from Google TTS");
     }
   }
-});
 
-// Play/Pause button
-playPauseBtn.addEventListener("click", () => {
-  if (state === "idle") {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        func: () => window.getSelection().toString()
-      }, (results) => {
-        const selectedText = results?.[0]?.result?.trim();
-        if (selectedText) speakText(selectedText);
-        else alert("Please select some text on the page.");
-      });
-    });
-  } else if (state === "speaking") {
-    synth.pause();
-    state = "paused";
-    playPauseBtn.querySelector("img").src = "icons/play.png";
-  } else if (state === "paused") {
-    synth.resume();
-    state = "speaking";
-    playPauseBtn.querySelector("img").src = "icons/pause.png";
+  async function playTextWithTTS(text, voice) {
+    try {
+      updateStatus("Generating speech audio...", "info");
+      const audioUrl = await fetchTTSAudio(text, voice);
+      audio.src = audioUrl;
+      audio.style.display = "block";
+      audio.play();
+      updateStatus("Reading started.", "success");
+    } catch (err) {
+      updateStatus("TTS failed: " + err.message, "error");
+      console.error(err);
+    }
   }
-});
 
-// Reload button
-reloadBtn.addEventListener("click", () => {
-  if (!lastSelectedText) {
-    alert("Please click the Play button");
-    return;
-  }
-  synth.cancel();
-  if (lastSelectedText) speakText(lastSelectedText);
-});
+  startButton.addEventListener("click", async () => {
+    try {
+      updateStatus("Getting selected text...", "info");
+      startButton.disabled = true;
+      hideSummary(); // Hide previous summary
 
-// Exit button
-exitBtn.addEventListener("click", () => {
-  synth.cancel();
-  window.close();
-});
+      let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-// Accent button
-accentBtn.addEventListener("click", () => {
-  showVoiceControls();
-});
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tab.id },
+          func: () => window.getSelection().toString()
+        },
+        (results) => {
+          if (chrome.runtime.lastError) {
+            updateStatus(`Script error: ${chrome.runtime.lastError.message}`, "error");
+            startButton.disabled = false;
+            return;
+          }
 
-// Speed button
-speedBtn.addEventListener("click", () => {
-  showSpeedControls();
-});
+          const selectedText = results[0]?.result || "";
 
-// Logo button
-logoBtn.addEventListener("click", () => {
-  showDefaultMessage();
-});
+          if (!selectedText.trim()) {
+            updateStatus("Please select some text first.", "error");
+            startButton.disabled = false;
+            return;
+          }
 
-// AI button
-aiBtn.addEventListener("click", () => {
-  showAIMessage();
-});
+          updateStatus("Summarizing...", "info");
 
-// ========== INIT ==========
-loadSettings();
-showDefaultMessage();
+          chrome.runtime.sendMessage(
+            { action: "summarize", text: selectedText },
+            async (response) => {
+              startButton.disabled = false;
+
+              if (chrome.runtime.lastError || !response?.summary) {
+                updateStatus("Failed to summarize.", "error");
+                return;
+              }
+
+              // Show the summary to the user
+              showSummary(response.summary);
+
+              const voice = voiceSelect.value;
+
+              const finalText =
+                `${response.summary}\nNow I will read the full content.\n${selectedText}`;
+
+              await playTextWithTTS(finalText, voice);
+            }
+          );
+        }
+      );
+    } catch (err) {
+      updateStatus(`Error: ${err.message}`, "error");
+      startButton.disabled = false;
+    }
+  });
+});

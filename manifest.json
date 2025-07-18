@@ -1,16 +1,23 @@
+
 {
   "manifest_version": 3,
-  "name": "Readify - Text to Speech",
+  "name": "Smart TTS Reader",
   "version": "1.0",
-  "description": "Reads selected text aloud with TTS.",
+  "description": "Reads content aloud with summarization",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icons/logo.png"
+    "default_popup": "popup.html"
   },
-  "permissions": ["scripting", "activeTab"],
-  "icons": {
-    "16": "icons/logo.png",
-    "48": "icons/logo.png",
-    "128": "icons/logo.png"
-  }
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
 }
+
+
