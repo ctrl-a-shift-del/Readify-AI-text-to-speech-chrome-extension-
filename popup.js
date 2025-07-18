@@ -1,22 +1,35 @@
+const synth = window.speechSynthesis;
 let voices = [];
-const voiceSelect = document.getElementById("voiceSelect");
-const genderSelect = document.getElementById("genderSelect");
-const speakBtn = document.getElementById("speak");
-const rateSlider = document.getElementById("rateSlider");
-const rateLabel = document.getElementById("rateLabel");
-
 let state = "idle"; // idle, speaking, paused
 let currentUtterance = null;
 let currentRate = 1.0;
 let lastSelectedText = "";
 
+// UI Elements
+const playPauseBtn = document.getElementById("playPauseBtn");
+const reloadBtn = document.getElementById("reloadBtn");
+const exitBtn = document.getElementById("exitBtn");
+const accentBtn = document.getElementById("accentBtn");
+const speedBtn = document.getElementById("speedBtn");
+const aiBtn = document.getElementById("aiBtn");
+const logoBtn = document.getElementById("logoBtn");
+
+// Content area elements
+const defaultMessage = document.getElementById("defaultMessage");
+const voiceControls = document.getElementById("voiceControls");
+const speedControls = document.getElementById("speedControls");
+const aiMessage = document.getElementById("aiMessage");
+
+// Voice selection elements
+const voiceSelect = document.getElementById("voiceSelect");
+const rateSlider = document.getElementById("rateSlider");
+const rateLabel = document.getElementById("rateLabel");
+
 // ========== LOAD FROM LOCAL STORAGE ==========
 function loadSettings() {
-  const savedGender = localStorage.getItem("gender") || "all";
   const savedVoice = localStorage.getItem("voice");
   const savedRate = localStorage.getItem("rate") || "3";
 
-  genderSelect.value = savedGender;
   rateSlider.value = savedRate;
   const level = parseInt(savedRate);
   currentRate = 0.5 + (level - 1) * 0.375;
@@ -27,37 +40,18 @@ function loadSettings() {
 
 // ========== SAVE TO LOCAL STORAGE ==========
 function saveSettings() {
-  localStorage.setItem("gender", genderSelect.value);
   localStorage.setItem("voice", voiceSelect.value);
   localStorage.setItem("rate", rateSlider.value);
 }
 
-// ========== VOICE GENDER INFERENCE ==========
-function inferGender(voice) {
-  const name = voice.name.toLowerCase();
-  const genderKeywords = {
-    male: ["male", "man", "john", "david", "michael", "alex", "daniel"],
-    female: ["female", "woman", "susan", "emma", "victoria", "karen", "linda"]
-  };
-  if (genderKeywords.female.some(word => name.includes(word))) return "female";
-  if (genderKeywords.male.some(word => name.includes(word))) return "male";
-  return voice.name.includes("female") ? "female"
-       : voice.name.includes("male") ? "male"
-       : "unknown";
-}
-
 // ========== LOAD VOICES ==========
 function loadVoices(preselectedVoice = null) {
-  voices = speechSynthesis.getVoices();
+  voices = synth.getVoices();
   if (!voices.length) return;
 
-  const selectedGender = genderSelect.value;
   voiceSelect.innerHTML = "";
 
   voices.forEach((voice) => {
-    const gender = inferGender(voice);
-    if (selectedGender !== "all" && gender !== selectedGender) return;
-
     const option = document.createElement("option");
     option.value = voice.name;
     option.textContent = `${voice.name} (${voice.lang})${voice.default ? " — Default" : ""}`;
@@ -79,7 +73,7 @@ function createUtterance(text) {
 
   utterance.onend = () => {
     state = "idle";
-    speakBtn.textContent = "Speak Selected Text";
+    playPauseBtn.querySelector("img").src = "icons/play.png";
     currentUtterance = null;
   };
 
@@ -88,43 +82,86 @@ function createUtterance(text) {
 
 // ========== SPEAK TEXT ==========
 function speakText(text) {
-  lastSelectedText = text;
   if (!text) {
-    alert("Please select some text.");
+    alert("Please select some text on the page.");
     return;
   }
 
-  speechSynthesis.cancel();
+  lastSelectedText = text;
+  synth.cancel();
   currentUtterance = createUtterance(text);
-  speechSynthesis.speak(currentUtterance);
+  synth.speak(currentUtterance);
   state = "speaking";
-  speakBtn.textContent = "Pause";
+  playPauseBtn.querySelector("img").src = "icons/pause.png";
+}
+
+// ========== SHOW/HIDE CONTENT AREAS ==========
+function showDefaultMessage() {
+  defaultMessage.style.display = "flex";
+  voiceControls.style.display = "none";
+  speedControls.style.display = "none";
+  aiMessage.style.display = "none";
+}
+
+function showVoiceControls() {
+  defaultMessage.style.display = "none";
+  voiceControls.style.display = "block";
+  speedControls.style.display = "none";
+  aiMessage.style.display = "none";
+}
+
+function showSpeedControls() {
+  defaultMessage.style.display = "none";
+  voiceControls.style.display = "none";
+  speedControls.style.display = "block";
+  aiMessage.style.display = "none";
+}
+
+function showAIMessage() {
+  defaultMessage.style.display = "none";
+  voiceControls.style.display = "none";
+  speedControls.style.display = "none";
+  aiMessage.style.display = "flex";
 }
 
 // ========== EVENT LISTENERS ==========
 
+// Voice loading
 speechSynthesis.onvoiceschanged = () => loadVoices(localStorage.getItem("voice"));
 
-genderSelect.addEventListener("change", () => {
-  saveSettings();
-  loadVoices();
-  if (state === "paused" && lastSelectedText) speakText(lastSelectedText);
-});
-
+// Voice selection
 voiceSelect.addEventListener("change", () => {
+  synth.pause(); // Pause when changing voice
+  state = "paused";
   saveSettings();
-  if (state === "paused" && lastSelectedText) speakText(lastSelectedText);
+  if (lastSelectedText) {
+    speakText(lastSelectedText);
+    synth.pause(); // Keep it paused after applying new voice
+    playPauseBtn.querySelector("img").src = "icons/play.png";
+  }
 });
 
+// Speed control
 rateSlider.addEventListener("input", (e) => {
   const level = parseInt(e.target.value);
   currentRate = 0.5 + (level - 1) * 0.375;
   rateLabel.textContent = `Speed: ${currentRate.toFixed(1)}x`;
   saveSettings();
-  if (state === "paused" && lastSelectedText) speakText(lastSelectedText);
+  
+  // Pause and update if currently speaking
+  if (state === "speaking" || state === "paused") {
+    synth.pause();
+    state = "paused";
+    if (lastSelectedText) {
+      speakText(lastSelectedText);
+      synth.pause(); // Keep it paused after applying new speed
+      playPauseBtn.querySelector("img").src = "icons/play.png";
+    }
+  }
 });
 
-speakBtn.addEventListener("click", () => {
+// Play/Pause button
+playPauseBtn.addEventListener("click", () => {
   if (state === "idle") {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       chrome.scripting.executeScript({
@@ -136,18 +173,53 @@ speakBtn.addEventListener("click", () => {
         else alert("Please select some text on the page.");
       });
     });
-
   } else if (state === "speaking") {
-    speechSynthesis.pause();
+    synth.pause();
     state = "paused";
-    speakBtn.textContent = "Resume";
-
+    playPauseBtn.querySelector("img").src = "icons/play.png";
   } else if (state === "paused") {
-    speechSynthesis.resume();
+    synth.resume();
     state = "speaking";
-    speakBtn.textContent = "Pause";
+    playPauseBtn.querySelector("img").src = "icons/pause.png";
   }
+});
+
+// Reload button
+reloadBtn.addEventListener("click", () => {
+  if (!lastSelectedText) {
+    alert("Please click the Play button");
+    return;
+  }
+  synth.cancel();
+  if (lastSelectedText) speakText(lastSelectedText);
+});
+
+// Exit button
+exitBtn.addEventListener("click", () => {
+  synth.cancel();
+  window.close();
+});
+
+// Accent button
+accentBtn.addEventListener("click", () => {
+  showVoiceControls();
+});
+
+// Speed button
+speedBtn.addEventListener("click", () => {
+  showSpeedControls();
+});
+
+// Logo button
+logoBtn.addEventListener("click", () => {
+  showDefaultMessage();
+});
+
+// AI button
+aiBtn.addEventListener("click", () => {
+  showAIMessage();
 });
 
 // ========== INIT ==========
 loadSettings();
+showDefaultMessage();

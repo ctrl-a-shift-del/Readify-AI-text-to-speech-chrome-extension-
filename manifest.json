@@ -5,10 +5,12 @@
   "description": "Reads selected text aloud with TTS.",
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_icon": "icons/logo.png"
   },
   "permissions": ["scripting", "activeTab"],
   "icons": {
-    "48": "icon.png"
+    "16": "icons/logo.png",
+    "48": "icons/logo.png",
+    "128": "icons/logo.png"
   }
 }
