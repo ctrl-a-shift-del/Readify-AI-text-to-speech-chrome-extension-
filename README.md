@@ -44,7 +44,7 @@ No more robotic tones or wordy paragraphs — just clean, clear, AI-enhanced aud
 
 ## 🎥 Demo Walkthrough
 
-[![Demo Video](https://img.youtube.com/vi/1Zoh4PMvPv4/0.jpg)](https://www.youtube.com/watch?v=1Zoh4PMvPv4)
+[![Demo Video](https://img.youtube.com/vi/gaBsIuV1kwY/0.jpg)](https://www.youtube.com/watch?v=gaBsIuV1kwY)
 
 ---
 
