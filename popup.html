@@ -3,27 +3,54 @@
 <head>
   <title>Smart TTS</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .button-row button {
+      flex: 1;
+    }
+  </style>
 </head>
 <body>
   <div class="header">
-    <img src="logo.png" alt="Logo" class="logo">
+    <img src="icons/icon128.png" alt="Logo" class="logo">
     <h2 class="brand-title">READIFY</h2>
   </div>
 
   <label for="voice">VOICE : </label>
   <select id="voice">
-    <option value="en-AU-Wavenet-B">AUSSIE MALE</option>
-    <option value="en-US-Wavenet-D">US MALE</option>
-    <option value="en-GB-Wavenet-A">UK FEMALE</option>
-    <option value="en-IN-Wavenet-A">INDIAN FEMALE</option>
+    <!-- 🇺🇸 US Voices -->
+    <option value="en-US-Wavenet-D">US Male (Default)</option>
+    <option value="en-US-Wavenet-B">US Male (Deep)</option>
+    <option value="en-US-Wavenet-F">US Female (Natural)</option>
+
+    <!-- 🇬🇧 UK Voices -->
+    <option value="en-GB-Wavenet-B">UK Male</option>
+    <option value="en-GB-Wavenet-C">UK Female</option>
+
+    <!-- 🇮🇳 Indian Voices -->
+    <option value="en-IN-Wavenet-A">Indian Female</option>
+    <option value="en-IN-Wavenet-B">Indian Male</option>
+
+    <!-- 🇦🇺 Australian Voices -->
+    <option value="en-AU-Wavenet-B">Aussie Male</option>
+    <option value="en-AU-Wavenet-C">Aussie Female</option>
+
   </select>
 
-  <button id="start-reading">START READING</button>
+
+  <div class="button-row">
+    <button id="read-text" style="background-color:#4CAF50;">Read</button>
+    <button id="summarize-text" style="background-color:#2196F3;">Summarize</button>
+  </div>
 
   <audio id="tts-audio" controls style="width:100%; margin-top:10px; display:none;"></audio>
 
   <div id="summary-container" class="hidden">
-    <h3>SUMMARY :</h3>
+    <h3>SUMMARY:</h3>
     <div id="summary-text"></div>
   </div>
 

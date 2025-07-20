@@ -1,12 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const startButton = document.getElementById("start-reading");
+  const summarizeBtn = document.getElementById("summarize-text");
+  const readBtn = document.getElementById("read-text");
   const statusDiv = document.getElementById("status");
   const voiceSelect = document.getElementById("voice");
   const audio = document.getElementById("tts-audio");
   const summaryContainer = document.getElementById("summary-container");
   const summaryText = document.getElementById("summary-text");
 
-  const GOOGLE_TTS_API_KEY = "AIzaSyDfkYbvnCDIobGnzFngGqnHCfhwxlvbfTM"; // Replace this!
+  const GOOGLE_TTS_API_KEY = "your_google_tts_api_key_here";
 
   function updateStatus(message, type = "info") {
     statusDiv.textContent = message;
@@ -33,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       audioConfig: {
         audioEncoding: "MP3",
-        speakingRate: 1.0 // Fixed speed
+        speakingRate: 1.25
       }
     };
 
@@ -44,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const data = await res.json();
-
     if (data.audioContent) {
       return `data:audio/mp3;base64,${data.audioContent}`;
     } else {
@@ -66,62 +66,73 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  startButton.addEventListener("click", async () => {
+  async function getSelectedTextFromTab() {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => window.getSelection().toString()
+    });
+    return results[0]?.result || "";
+  }
+
+  summarizeBtn.addEventListener("click", async () => {
+    updateStatus("Getting selected text...", "info");
+    summarizeBtn.disabled = true;
+    hideSummary();
+
     try {
-      updateStatus("Getting selected text...", "info");
-      startButton.disabled = true;
-      hideSummary(); // Hide previous summary
+      const selectedText = await getSelectedTextFromTab();
+      if (!selectedText.trim()) {
+        updateStatus("Please select some text first.", "error");
+        summarizeBtn.disabled = false;
+        return;
+      }
 
-      let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      updateStatus("Summarizing...", "info");
 
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tab.id },
-          func: () => window.getSelection().toString()
-        },
-        (results) => {
-          if (chrome.runtime.lastError) {
-            updateStatus(`Script error: ${chrome.runtime.lastError.message}`, "error");
-            startButton.disabled = false;
+      chrome.runtime.sendMessage(
+        { action: "summarize", text: selectedText },
+        async (response) => {
+          summarizeBtn.disabled = false;
+
+          if (chrome.runtime.lastError || !response?.summary) {
+            updateStatus("Failed to summarize.", "error");
             return;
           }
 
-          const selectedText = results[0]?.result || "";
+          const summary = response.summary;
+          showSummary(summary);
 
-          if (!selectedText.trim()) {
-            updateStatus("Please select some text first.", "error");
-            startButton.disabled = false;
-            return;
-          }
-
-          updateStatus("Summarizing...", "info");
-
-          chrome.runtime.sendMessage(
-            { action: "summarize", text: selectedText },
-            async (response) => {
-              startButton.disabled = false;
-
-              if (chrome.runtime.lastError || !response?.summary) {
-                updateStatus("Failed to summarize.", "error");
-                return;
-              }
-
-              // Show the summary to the user
-              showSummary(response.summary);
-
-              const voice = voiceSelect.value;
-
-              const finalText =
-                `${response.summary}\nNow I will read the full content.\n${selectedText}`;
-
-              await playTextWithTTS(finalText, voice);
-            }
-          );
+          const voice = voiceSelect.value;
+          await playTextWithTTS(summary, voice);
         }
       );
     } catch (err) {
-      updateStatus(`Error: ${err.message}`, "error");
-      startButton.disabled = false;
+      updateStatus("Error: " + err.message, "error");
+      summarizeBtn.disabled = false;
+    }
+  });
+
+  readBtn.addEventListener("click", async () => {
+    updateStatus("Getting selected text...", "info");
+    readBtn.disabled = true;
+    hideSummary();
+
+    try {
+      const selectedText = await getSelectedTextFromTab();
+      if (!selectedText.trim()) {
+        updateStatus("Please select some text first.", "error");
+        readBtn.disabled = false;
+        return;
+      }
+
+      const voice = voiceSelect.value;
+      await playTextWithTTS(selectedText, voice);
+      updateStatus("Reading selected text.", "success");
+    } catch (err) {
+      updateStatus("Error: " + err.message, "error");
+    } finally {
+      readBtn.disabled = false;
     }
   });
 });

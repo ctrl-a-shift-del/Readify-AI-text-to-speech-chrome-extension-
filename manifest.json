@@ -1,11 +1,19 @@
-
 {
   "manifest_version": 3,
-  "name": "Smart TTS Reader",
-  "version": "1.0",
-  "description": "Reads content aloud with summarization",
-  "permissions": ["activeTab", "scripting"],
-  "host_permissions": ["<all_urls>"],
+  "name": "READIFY: AI Reading Companion",
+  "version": "3.0",
+  "description": "AI Text Summarizer & Reader • HuggingFace + Google TTS • Realistic Voices • Select & Listen Instantly",
+  "permissions": ["activeTab", "scripting", "contextMenus"],
+  "host_permissions": [
+    "<all_urls>",
+    "https://texttospeech.googleapis.com/*",
+    "https://api-inference.huggingface.co/*"
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html"
   },
@@ -15,9 +23,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "run_at": "document_end"
     }
   ]
 }
-
-
