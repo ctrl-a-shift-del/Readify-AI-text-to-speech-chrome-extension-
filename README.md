@@ -70,12 +70,15 @@ No more robotic tones or wordy paragraphs — just clean, clear, AI-enhanced aud
 > ⚠️ Currently for local development only (not yet published to Chrome Web Store)
 
 1. Clone or download this repository.
-2. Open Chrome and visit:  
+2. Add your API keys:
+   - Replace `your_huggingface_api_key_here` in `background.js` (HF_API_KEY)
+   - Replace `your_google_tts_api_key_here` in both `background.js` and `popup.js` (GOOGLE_TTS_API_KEY)
+3. Open Chrome and visit:  
    `chrome://extensions/`
-3. Enable **Developer Mode**.
-4. Click **“Load Unpacked”** and select the project folder.
-5. Pin the extension (optional).
-6. USAGE: Go to any webpage or PDF → select text →  
+4. Enable **Developer Mode**.
+5. Click **“Load Unpacked”** and select the project folder.
+6. Pin the extension (optional).
+7. USAGE: Go to any webpage or PDF → select text →  
    either right-click and choose **"Read" or "Summarize"**,  
    or click the extension and do the same. 
 
