@@ -1,6 +1,6 @@
 ![Readify Banner](./banner.jpg)
 
-# Readify – AI-Powered Reading Companion (A Website Extension)
+# Readify – AI-Powered Reading Companion (A Chrome Extension)
 
 > Developed during the initial sprint of ProtoSem 2025, a project-based industry immersion conducted by Forge.
 
@@ -8,7 +8,7 @@
 
 ## 🧠 Overview
 
-**Readify** is a smart Chrome extension that brings **AI-based reading and summarization** to your browser. Just **select any text** from a web page, and Readify will **summarize it using Hugging Face BART**, and **read it aloud** using Google’s neural text-to-speech with **realistic human voices**. 
+**Readify** is a smart Chrome extension that brings **AI-based reading and summarization** to your browser. Just **select any text** from a web page or even a PDF, and Readify will **summarize it using Hugging Face BART**, and **read it aloud** using Google’s neural text-to-speech with **realistic human voices**.  
 No more robotic tones or wordy paragraphs — just clean, clear, AI-enhanced audio summaries on the go.
 
 ---
@@ -31,12 +31,14 @@ No more robotic tones or wordy paragraphs — just clean, clear, AI-enhanced aud
 ## ✨ Features
 
 - **AI Summarization** using BART Large CNN from Hugging Face
+- **PDF Content Support** – select and right-click to listen directly
+- **Voice Model Selection** – Choose between Indian, US, UK, Aussie (male and female voices)
 - **Natural Human-like Voice** powered by Google TTS (not robotic!)
-- **Voice Model Selection**: Choose between Indian, US, UK, and Aussie voices 
-- **Instant one-click interaction** – no page reloads or switching tabs
-- **Minimal popup UI** with real-time status and summary feedback
-- **Speed Control** 
-- **Download MP3 Output**
+- **Right-click Shortcut** – instantly read or summarize selected text (no popup needed)
+- **Speed Control** – adjust the speed of speech
+- **Download MP3 Output** – store and share generated audio
+- **Instant One-Click Interaction** – no page reloads or switching tabs
+- **Minimal Popup UI** – with real-time status and summary feedback
 
 ---
 
@@ -73,34 +75,40 @@ No more robotic tones or wordy paragraphs — just clean, clear, AI-enhanced aud
 3. Enable **Developer Mode**.
 4. Click **“Load Unpacked”** and select the project folder.
 5. Pin the extension (optional).
-6. Go to any webpage → select text → click the extension → hit **START READING**.
+6. USAGE: Go to any webpage or PDF → select text →  
+   either right-click and choose **"Read" or "Summarize"**,  
+   or click the extension and do the same. 
 
 ---
 
 ## ⚙️ How It Works
 
-1. You **highlight** any paragraph or block of text on a webpage.
-2. Click the **Readify** extension icon and press **START READING**.
+1. You **highlight** any paragraph or block of text on a webpage or supported PDF.
+2. Either:
+   - Click the **Readify** extension icon and press **Read or Summarize**, or  
+   - Simply **right-click** and choose **Read** or **Summarize** directly.
 3. The extension sends the text to Hugging Face → gets a **summary**.
 4. The summary + full text are sent to Google TTS.
 5. The audio is played in-browser using a voice of your choice.
 
+(NOTE: Voice and speed settings apply only via the popup. Right-click method uses the default voice and speed.)
+
 Behind the scenes:
 - `background.js`: Handles AI summarization via API
-- `content.js`: Extracts webpage text and coordinates
+- `content.js`: Extracts webpage/PDF text and coordinates
 - `popup.js`: Manages UI logic and TTS playback
 
 ---
 
 ## 📁 File Structure
 
-- background.js # Hugging Face summarizer (async handler)
-- content.js # Full-page content parser & TTS handler
-- popup.html # Minimal UI for settings & start button
-- popup.js # Logic for reading & summary playback
-- style.css # All popup UI styles
-- manifest.json # Extension configuration (v3)
-- logo.png # Extension icon
+- `background.js` – Hugging Face summarizer (async handler)
+- `content.js` – Full-page content parser & TTS handler
+- `popup.html` – Minimal UI for settings & start button
+- `popup.js` – Logic for reading & summary playback
+- `style.css` – All popup UI styles
+- `manifest.json` – Extension configuration (v3)
+- `logo.png` – Extension icon
 
 ---
 
@@ -108,20 +116,19 @@ Behind the scenes:
 
 > **Team Name**: `Reado-gram`  
 
-| Name               | Contributions                                          |
-|--------------------|--------------------------------------------------------|
-| **Shailendra C**   | Team lead, bug fixes, GitHub, feature integration      |
-| **Naveen**         | AI feature support, presentation                       |
-| **Yadesh**         | Feature addition, tech support                         |
-| **Takshak**        | Feature addition, tech support                         |
-| **Santhiya**       | UI design and frontend, testing, feature addition      |
-| **Nivetha**        | UI assistance and frontend, testing, feature addition  |
+| Name               | Contributions                                              |
+|--------------------|------------------------------------------------------------|
+| **Shailendra C**   | integration, Github, Bug fixes, New feature implementaion  |
+| **Naveen**         | Core AI functionality, backend logic, demo prep            |
+| **Santhiya**       | frontend design and styling, frontend adjustments          |
+| **Nivetha**        | UI and frontend testing and improvements                   |  
+| **Yadesh**         | Feature addition, speed adjustment integration             |
+| **Takshak**        | Feature addition, voice models integration                 |
 
 ---
 
 ## 🚀 Future Enhancements
 
-- 🧾 **PDF reading support**
 - 🌐 **Multilingual summarization & TTS**
 - 🧠 **Alternative summarization models (Gemini, T5, GPT)**
 
@@ -138,7 +145,6 @@ This is an academic prototype built under Forge ProtoSem 2025.
 
 For questions, suggestions or showcasing:
 
-- **Shailendra Chandrasekaran**    
-[LinkedIn](https://linkedin.com/in/shailendrachandrasekaran)  
+- **Shailendra Chandrasekaran**    [LinkedIn](https://linkedin.com/in/shailendrachandrasekaran)  
 
 ---
