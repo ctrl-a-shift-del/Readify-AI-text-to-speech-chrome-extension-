@@ -124,7 +124,7 @@ Behind the scenes:
 | **Shailendra C**   | integration, Github, Bug fixes, New feature implementaion  |
 | **Naveen**         | Core AI functionality, backend logic, demo prep            |
 | **Santhiya**       | frontend design and styling, frontend adjustments          |
-| **Nivetha**        | UI and frontend testing and improvements                   |  
+| **Nandhini G**     | UI and frontend testing and improvements                   |  
 | **Yadesh**         | Feature addition, speed adjustment integration             |
 | **Takshak**        | Feature addition, voice models integration                 |
 
